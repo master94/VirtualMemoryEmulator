@@ -1,0 +1,5 @@
+virtual_memory_pages    =   32
+physical_memory_pages   =   16
+page_size               =   1024
+logfile                 =   memory_log
+commands_file           =   commands

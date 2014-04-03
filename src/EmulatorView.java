@@ -9,7 +9,7 @@ import java.util.Observer;
 import javax.swing.*;
 
 public class EmulatorView extends JFrame implements Observer {
-    private static final int COLS_NUMBER = 3;
+    private static final int COLS_NUMBER = 2;
     private VirtualMemoryBlock[] virtMemory;
     private CommandProcessor commandProcessor;
     private JTextPane blockInfo;
@@ -25,15 +25,18 @@ public class EmulatorView extends JFrame implements Observer {
 
     private void onPageButtonPressed(int index) {
         VirtualMemoryBlock block = virtMemory[index];
-        String str = String.format("Physical Memory Address: %d\nReads: %d\nWrites: %d\nLast Access: %d\nIn memory time: %d\n",
+        String usage = Integer.toBinaryString(block.getUsage());
+        String str = String.format("Physical Memory Address: %d\nReads: %d\nWrites: %d\nLast Access: %d\nIn memory time: %d\nUsage: %32s\n",
                                     block.getPhysMemoryBlock(), block.getReadCounter(), block.getWriteCounter(),
-                                    block.getLastAccessTime(), block.getInMemoryTime());
+                                    block.getLastAccessTime(), block.getInMemoryTime(),
+                                    ("00000000000000000000000000000000" + usage).substring(usage.length()));
         blockInfo.setText(str);
     }
 
     private void nextStep() {
         if (commandProcessor.hasNextCommand()) {
             commandProcessor.proceedNextCommand();
+            commandProcessor.updateMemory();
 
             if (commandProcessor.hasNextCommand()) {
                 Command command = commandProcessor.getNextCommand();

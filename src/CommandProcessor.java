@@ -42,6 +42,10 @@ public class CommandProcessor {
         }
     }
 
+    public void updateMemory() {
+        memUnit.updateMemory();
+    }
+
     public boolean hasNextCommand() {
         return currCommand < commands.size();
     }
