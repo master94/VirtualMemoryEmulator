@@ -17,12 +17,16 @@ class Command {
 public class CommandProcessor {
     private static final String READ_TAG = "READ";
     private static final String WRITE_TAG = "WRITE";
+    private static final String RANDOM_TAG = "RANDOM";
+
     private MemoryUnit memUnit;
     private final ArrayList<Command> commands = new ArrayList<>();
+    private int commandsPerTick;
     private int currCommand = 0;
 
-    public CommandProcessor(MemoryUnit memUnit, String fileName) {
+    public CommandProcessor(MemoryUnit memUnit, String fileName, int commandsPerTick) {
         this.memUnit = memUnit;
+        this.commandsPerTick = commandsPerTick;
 
         try (BufferedReader br = new BufferedReader(new FileReader(fileName))) {
             String line;
@@ -30,7 +34,9 @@ public class CommandProcessor {
                 StringTokenizer tokenizer = new StringTokenizer(line);
                 Command command = new Command();
                 command.command = tokenizer.nextToken();
-                command.address = Long.parseLong(tokenizer.nextToken());
+
+                String address = tokenizer.nextToken();
+                command.address = address.compareTo(RANDOM_TAG) == 0 ? -1 : Long.parseLong(address);
                 commands.add(command);
             }
         }
@@ -40,10 +46,6 @@ public class CommandProcessor {
         catch (IOException ex) {
             ex.printStackTrace();
         }
-    }
-
-    public void updateMemory() {
-        memUnit.updateMemory();
     }
 
     public boolean hasNextCommand() {
@@ -67,5 +69,8 @@ public class CommandProcessor {
             default:
                 break;
         }
+
+        if (currCommand % commandsPerTick == 0)
+            memUnit.updateMemory();
     }
 }

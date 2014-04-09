@@ -8,7 +8,9 @@ import java.util.List;
 /**
  * Created by user on 28.03.14.
  */
-public class NfuAgingPageFaultHandler implements PageFaultHandler {
+
+public class LruAgingPageFaultHandler implements PageFaultHandler {
+
     @Override
     public int handle(VirtualMemoryBlock[] virtualMemory, int accessedBlock) {
         int index = -1;

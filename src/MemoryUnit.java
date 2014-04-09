@@ -11,11 +11,52 @@ import java.util.Observable;
 import java.util.Random;
 
 public class MemoryUnit extends Observable {
+
+    private enum OperationType {
+        Read,
+        Write
+    }
+
     private VirtualMemoryBlock[] virtualMemory;
     private int memBlockSize;
     private int physicalMemoryBlocks;
     private PageFaultHandler pageFaultHandler;
     private OutputStream logger;
+
+
+    void performOperation(OperationType type, long address) {
+        int blockIndex = getBlockIndex(address);
+
+        try {
+            logger.write(String.format("%s %d (BLOCK %d):", type.name(), address, blockIndex).getBytes());
+
+            if (!virtualMemory[blockIndex].isMapped()) {
+                handleFault(blockIndex);
+                logger.write("PAGE FAULT\n".getBytes());
+            }
+            else {
+                logger.write("SUCCESS\n".getBytes());
+            }
+
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+
+        VirtualMemoryBlock block = virtualMemory[blockIndex];
+
+        switch (type) {
+            case Read:
+                block.read();
+                break;
+            case Write:
+                block.write();
+                break;
+            default:
+                throw new IllegalArgumentException("No such operation type.");
+        }
+
+        virtualMemory[blockIndex].read();
+    }
 
     private void notifyView() {
         setChanged();
@@ -74,46 +115,12 @@ public class MemoryUnit extends Observable {
     }
 
     public void write(long address) {
-        int blockIndex = getBlockIndex(address);
-
-        try {
-            logger.write(String.format("WRITE %d (BLOCK %d):", address, blockIndex).getBytes());
-
-            if (!virtualMemory[blockIndex].isMapped()) {
-                handleFault(blockIndex);
-                logger.write("PAGE FAULT\n".getBytes());
-            }
-            else {
-                logger.write("SUCCESS\n".getBytes());
-            }
-
-        } catch (IOException e) {
-            e.printStackTrace();
-        }
-
-        virtualMemory[blockIndex].write();
+        performOperation(OperationType.Write, address);
         notifyView();
     }
 
     public void read(long address) {
-        int blockIndex = getBlockIndex(address);
-
-        try {
-            logger.write(String.format("READ  %d (BLOCK %d):", address, blockIndex).getBytes());
-
-            if (!virtualMemory[blockIndex].isMapped()) {
-                handleFault(blockIndex);
-                logger.write("PAGE FAULT\n".getBytes());
-            }
-            else {
-                logger.write("SUCCESS\n".getBytes());
-            }
-
-        } catch (IOException e) {
-            e.printStackTrace();
-        }
-
-        virtualMemory[blockIndex].read();
+        performOperation(OperationType.Read, address);
         notifyView();
     }
 }

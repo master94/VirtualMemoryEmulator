@@ -10,6 +10,9 @@ import javax.swing.*;
 
 public class EmulatorView extends JFrame implements Observer {
     private static final int COLS_NUMBER = 2;
+    private static final String WINDOW_TITLE = "Virtual Memory Emulator";
+    private static final String LABEL_TEXT_PATTERN = "<html><font color='red'>%d</font></html>";
+
     private VirtualMemoryBlock[] virtMemory;
     private CommandProcessor commandProcessor;
     private JTextPane blockInfo;
@@ -23,20 +26,36 @@ public class EmulatorView extends JFrame implements Observer {
     private void buildInterface(MemoryUnit memUnit) {
     }
 
-    private void onPageButtonPressed(int index) {
-        VirtualMemoryBlock block = virtMemory[index];
+    private String getBlockInfo(VirtualMemoryBlock block) {
+        final String pattern =  "Physical Memory Address: %d\n" +
+                                "Reads: %d\n" +
+                                "Writes: %d\n" +
+                                "Last Access: %d\n" +
+                                "In memory time: %d\n" +
+                                "Usage: %32s\n";
+
         String usage = Integer.toBinaryString(block.getUsage());
-        String str = String.format("Physical Memory Address: %d\nReads: %d\nWrites: %d\nLast Access: %d\nIn memory time: %d\nUsage: %32s\n",
-                                    block.getPhysMemoryBlock(), block.getReadCounter(), block.getWriteCounter(),
-                                    block.getLastAccessTime(), block.getInMemoryTime(),
-                                    ("00000000000000000000000000000000" + usage).substring(usage.length()));
-        blockInfo.setText(str);
+        String zeros32 = "00000000000000000000000000000000";
+        String usageStringForm = (zeros32 + usage).substring(usage.length());
+
+        String info = String.format(pattern,
+                                    block.getPhysMemoryBlock(),
+                                    block.getReadCounter(),
+                                    block.getWriteCounter(),
+                                    block.getLastAccessTime(),
+                                    block.getInMemoryTime(),
+                                    usageStringForm);
+
+        return info;
+    }
+
+    private void onPageButtonPressed(int index) {
+        blockInfo.setText(getBlockInfo(virtMemory[index]));
     }
 
     private void nextStep() {
         if (commandProcessor.hasNextCommand()) {
             commandProcessor.proceedNextCommand();
-            commandProcessor.updateMemory();
 
             if (commandProcessor.hasNextCommand()) {
                 Command command = commandProcessor.getNextCommand();
@@ -49,7 +68,7 @@ public class EmulatorView extends JFrame implements Observer {
         }
     }
 
-    private void run() {
+    private void runAllCommands() {
         new Thread(new Runnable() {
             @Override
             public void run() {
@@ -100,7 +119,7 @@ public class EmulatorView extends JFrame implements Observer {
         runButton.addActionListener(new ActionListener() {
             @Override
             public void actionPerformed(ActionEvent e) {
-                run();
+                runAllCommands();
             }
         });
         controlPanel.add(runButton);
@@ -114,7 +133,7 @@ public class EmulatorView extends JFrame implements Observer {
     }
 
     public EmulatorView(CommandProcessor commandProcessor) {
-        setTitle("Virtual Memory Emulator");
+        setTitle(WINDOW_TITLE);
         setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
 
         this.commandProcessor = commandProcessor;
@@ -124,6 +143,7 @@ public class EmulatorView extends JFrame implements Observer {
 
         JPanel subPanel = new JPanel();
         subPanel.setLayout(new BoxLayout(subPanel, BoxLayout.X_AXIS));
+
         buttonsPanel = new JPanel();
         buttonsPanel.setLayout(new GridLayout(0, COLS_NUMBER * 2));
 
@@ -159,8 +179,10 @@ public class EmulatorView extends JFrame implements Observer {
 
             for (int i = 0; i < virtMemory.length; ++i) {
                 final int index = i / COLS_NUMBER + (i % COLS_NUMBER) * ROWS;
-                String label = virtMemory[index].isMapped() ? String.format("<html><font color='red'>%d</font></html>",
-                                                            virtMemory[index].getPhysMemoryBlock()) : "";
+
+                String label = virtMemory[index].isMapped() ?
+                               String.format(LABEL_TEXT_PATTERN, virtMemory[index].getPhysMemoryBlock()) : "";
+
                 buttonLabels[i] = new JLabel(label);
                 buttonLabels[i].setHorizontalAlignment(JLabel.CENTER);
 
@@ -171,6 +193,7 @@ public class EmulatorView extends JFrame implements Observer {
                         onPageButtonPressed(index);
                     }
                 });
+
                 buttonsPanel.add(button);
                 buttonsPanel.add(buttonLabels[i]);
             }
@@ -178,8 +201,10 @@ public class EmulatorView extends JFrame implements Observer {
 
         for (int i = 0; i < virtMemory.length; ++i) {
             final int index = i / COLS_NUMBER + (i % COLS_NUMBER) * ROWS;
-            String label = virtMemory[index].isMapped() ? String.format("<html><font color='red'>%d</font></html>",
-                    virtMemory[index].getPhysMemoryBlock()) : "";
+
+            String label = virtMemory[index].isMapped() ?
+                           String.format(LABEL_TEXT_PATTERN, virtMemory[index].getPhysMemoryBlock()) : "";
+
             buttonLabels[i].setText(label);
         }
 
