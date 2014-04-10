@@ -27,7 +27,7 @@ public class Test {
         final String commandsFile = prop.getProperty("commands_file", "commands");
 
         MemoryUnit unit = new MemoryUnit(pageSize, physicalMemoryPages, logFile);
-        unit.setPageFaultHandler(new LruAgingPageFaultHandler());
+        unit.setPageFaultHandler(new NfuAgingPageFaultHandler());
 
         CommandProcessor processor = new CommandProcessor(unit, commandsFile, commandsPerTick);
 

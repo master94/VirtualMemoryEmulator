@@ -9,7 +9,7 @@ import java.util.List;
  * Created by user on 28.03.14.
  */
 
-public class LruAgingPageFaultHandler implements PageFaultHandler {
+public class NfuAgingPageFaultHandler implements PageFaultHandler {
 
     @Override
     public int handle(VirtualMemoryBlock[] virtualMemory, int accessedBlock) {
