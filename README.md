@@ -1,4 +1,4 @@
 VirtualMemoryEmulator
 =====================
 
-Software emulator of virtual memory mapping mechanism. Includes LRU Aging 
+Software emulator of virtual memory mapping mechanism. Includes LRU Aging algorithm.
